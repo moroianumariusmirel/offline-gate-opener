@@ -804,6 +804,34 @@
       return params;
     }
 
+    async function dumpGattProfile(server) {
+      log('Running GATT profile diagnostics...', 'info');
+      try {
+        const services = await server.getPrimaryServices();
+        log(`Discovered ${services.length} services:`, 'info');
+        for (const service of services) {
+          log(`Service: ${service.uuid}`, 'info');
+          try {
+            const characteristics = await service.getCharacteristics();
+            log(`  Characteristics count: ${characteristics.length}`, 'info');
+            for (const char of characteristics) {
+              const props = [];
+              if (char.properties.read) props.push('read');
+              if (char.properties.write) props.push('write');
+              if (char.properties.writeWithoutResponse) props.push('writeWithoutResponse');
+              if (char.properties.notify) props.push('notify');
+              if (char.properties.indicate) props.push('indicate');
+              log(`  - Char: ${char.uuid} [${props.join(', ')}]`, 'info');
+            }
+          } catch (charErr) {
+            log(`  Failed to discover characteristics: ${charErr.message}`, 'error');
+          }
+        }
+      } catch (err) {
+        log(`GATT discovery failed: ${err.message}`, 'error');
+      }
+    }
+
     // Helper to find characteristic in primary service, falling back to service traversal if service UUID differs
     async function getCharacteristicRobust(server, serviceUuid, charUuid) {
       try {
@@ -871,6 +899,9 @@
         
         bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
         gattServer = await bleDevice.gatt.connect();
+        
+        // Run diagnostic dump of services and characteristics
+        await dumpGattProfile(gattServer);
         
         log('Connected to GATT. Locating Auth Characteristic...', 'info');
         charAuth = await getCharacteristicRobust(gattServer, UUID_SERVICE_B001, UUID_CHAR_B001);
