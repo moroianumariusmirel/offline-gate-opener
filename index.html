@@ -308,6 +308,57 @@
     }
 
     /* Logs view */
+    .log-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 0 4px;
+    }
+
+    .btn-copy-logs {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .btn-copy-logs:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-copy-logs:active {
+      transform: scale(0.95);
+    }
+
+    .log-panel, .log-panel * {
+      user-select: text !important;
+      -webkit-user-select: text !important;
+    }
+
     .log-panel {
       background: rgba(0, 0, 0, 0.4);
       border: 1px solid var(--card-border);
@@ -470,8 +521,20 @@
     </div>
 
     <!-- Logs panel -->
-    <div id="log-panel" class="log-panel">
-      <div class="log-entry">App initialized. Fill credentials and tap Connect.</div>
+    <div class="log-container">
+      <div class="log-header">
+        <span>Connection Log</span>
+        <button id="btn-copy-logs" class="btn-copy-logs" title="Copy logs to clipboard">
+          <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span>Copy</span>
+        </button>
+      </div>
+      <div id="log-panel" class="log-panel">
+        <div class="log-entry">App initialized. Fill credentials and tap Connect.</div>
+      </div>
     </div>
   </div>
 
@@ -791,7 +854,17 @@
           filters: [
             { namePrefix: 'WBT01-' }
           ],
-          optionalServices: [UUID_SERVICE_B000, UUID_SERVICE_B001, UUID_SERVICE_C000]
+          optionalServices: [
+            UUID_SERVICE_B000, 
+            UUID_SERVICE_B001, 
+            UUID_SERVICE_C000,
+            '0000ffe0-0000-1000-8000-00805f9b34fb', // Common serial service (HM-10)
+            '0000ffe1-0000-1000-8000-00805f9b34fb', // Common serial char
+            '6e400001-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART
+            '00001800-0000-1000-8000-00805f9b34fb', // Generic Access
+            '00001801-0000-1000-8000-00805f9b34fb', // Generic Attribute
+            '0000180a-0000-1000-8000-00805f9b34fb'  // Device Info
+          ]
         });
 
         log(`Found device: ${bleDevice.name}. Connecting to GATT server...`, 'info');
@@ -864,6 +937,9 @@
 
       } catch (err) {
         log(`Connection failed: ${err.message}`, 'error');
+        if (err.message.includes('No Services found')) {
+          log('Troubleshooting: If services were not found, try: (1) Turn Bluetooth OFF and back ON in your PC settings. (2) Unpair/forget the WBT01 device from your OS Bluetooth paired devices list, then restart Chrome. (3) On Linux, run: sudo systemctl restart bluetooth', 'info');
+        }
         console.error(err);
         setStatus('disconnected');
         if (gattServer) gattServer.disconnect();
@@ -915,6 +991,21 @@
       const cmd = isLightOn ? 'LIGHT ON' : 'LIGHT OFF';
       sendCommand(cmd);
       document.getElementById('btn-light').querySelector('span').innerText = isLightOn ? 'LIGHT OFF' : 'LIGHT ON';
+    });
+
+    document.getElementById('btn-copy-logs').addEventListener('click', () => {
+      const logsText = Array.from(logPanel.querySelectorAll('.log-entry'))
+        .map(entry => entry.innerText)
+        .join('\n');
+      navigator.clipboard.writeText(logsText).then(() => {
+        const btn = document.getElementById('btn-copy-logs');
+        const span = btn.querySelector('span');
+        const origText = span.innerText;
+        span.innerText = 'Copied!';
+        setTimeout(() => { span.innerText = origText; }, 1500);
+      }).catch(err => {
+        alert('Failed to copy: ' + err);
+      });
     });
 
   </script>
