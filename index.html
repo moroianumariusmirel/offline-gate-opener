@@ -1076,11 +1076,15 @@
 
       log(`Sending command: "${command}" (Payload: ${payload})`, 'info');
       try {
+        // Convert literal "\r" and "\n" strings into actual control character bytes
+        const cleanPayload = payload.replace(/\\r/g, '\r').replace(/\\n/g, '\n');
         const encoder = new TextEncoder();
+        const encodedBytes = encoder.encode(cleanPayload);
+        
         if (charControl.writeValueWithResponse) {
-          await charControl.writeValueWithResponse(encoder.encode(payload));
+          await charControl.writeValueWithResponse(encodedBytes);
         } else {
-          await charControl.writeValue(encoder.encode(payload));
+          await charControl.writeValue(encodedBytes);
         }
         log(`Command "${command}" sent successfully!`, 'success');
       } catch (err) {
