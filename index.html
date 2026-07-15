@@ -518,6 +518,12 @@
         </svg>
         <span>EMERGENCY STOP</span>
       </button>
+
+      <!-- Custom Command Input (Gives access to RELAY1, RELAY2, etc.) -->
+      <div class="custom-command-container" style="grid-column: span 2; display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-sm);">
+        <input type="text" id="input-custom-cmd" class="input-field" placeholder="e.g. RELAY1" style="flex-grow: 1; margin: 0;" disabled>
+        <button id="btn-send-custom" class="btn btn-primary" style="padding: 0 16px; margin: 0; min-height: unset; height: auto;" disabled>Send Command</button>
+      </div>
     </div>
 
     <!-- Logs panel -->
@@ -734,12 +740,16 @@
     const pinField = document.getElementById('device-pin');
     const serialField = document.getElementById('device-serial');
 
+    const customCmdInput = document.getElementById('input-custom-cmd');
+    const btnSendCustom = document.getElementById('btn-send-custom');
+
     const controlButtons = [
       document.getElementById('btn-open'),
       document.getElementById('btn-close'),
       document.getElementById('btn-ped'),
       document.getElementById('btn-light'),
-      document.getElementById('btn-stop')
+      document.getElementById('btn-stop'),
+      btnSendCustom
     ];
 
     // GATT UUID configurations
@@ -782,6 +792,7 @@
         btnConnect.querySelector('span').innerText = 'Connect';
         btnConnect.disabled = false;
         controlButtons.forEach(btn => btn.disabled = true);
+        customCmdInput.disabled = true;
       } else if (status === 'connecting') {
         statusText.innerHTML = '<div id="status-dot" class="status-dot connecting"></div>Connecting...';
         btnConnect.querySelector('span').innerText = 'Wait...';
@@ -791,6 +802,7 @@
         btnConnect.querySelector('span').innerText = 'Disconnect';
         btnConnect.disabled = false;
         controlButtons.forEach(btn => btn.disabled = false);
+        customCmdInput.disabled = false;
       }
     }
 
@@ -1078,6 +1090,15 @@
     document.getElementById('btn-close').addEventListener('click', () => sendCommand('FULL CLOSE'));
     document.getElementById('btn-ped').addEventListener('click', () => sendCommand('PED OPEN'));
     document.getElementById('btn-stop').addEventListener('click', () => sendCommand('STOP'));
+
+    btnSendCustom.addEventListener('click', () => {
+      const customCmd = customCmdInput.value.trim();
+      if (customCmd) {
+        sendCommand(customCmd);
+      } else {
+        alert('Please type a command first!');
+      }
+    });
 
     document.getElementById('btn-light').addEventListener('click', () => {
       isLightOn = !isLightOn;
