@@ -747,11 +747,15 @@
     const UUID_SERVICE_VENDOR = 'd9403fbf-2e16-4d48-8a8a-3478b41daccc';
     const UUID_CHAR_B001      = '0000b001-0000-1000-8000-00805f9b34fb';
     const UUID_CHAR_C000      = '0000c000-0000-1000-8000-00805f9b34fb';
+    const UUID_CHAR_C001      = '0000c001-0000-1000-8000-00805f9b34fb';
+    const UUID_CHAR_C004      = '0000c004-0000-1000-8000-00805f9b34fb';
 
     let gattServer = null;
     let bleDevice = null;
     let charAuth = null;
     let charControl = null;
+    let charStatus = null;
+    let charDebug = null;
     let isLightOn = false;
 
     // Load credentials from LocalStorage
@@ -959,6 +963,25 @@
           await charAuth.writeValue(encoder.encode(responsePayload));
         }
 
+        log('Locating Status & Debug Characteristics...', 'info');
+        try {
+          charStatus = await getCharacteristicRobust(gattServer, UUID_SERVICE_CUSTOM, UUID_CHAR_C001);
+          charStatus.addEventListener('characteristicvaluechanged', handleStatusNotification);
+          await charStatus.startNotifications();
+          log('Subscribed to Status updates.', 'success');
+        } catch (e) {
+          log(`Failed to subscribe to Status characteristic: ${e.message}`, 'error');
+        }
+
+        try {
+          charDebug = await getCharacteristicRobust(gattServer, UUID_SERVICE_CUSTOM, UUID_CHAR_C004);
+          charDebug.addEventListener('characteristicvaluechanged', handleDebugNotification);
+          await charDebug.startNotifications();
+          log('Subscribed to Debug logs.', 'success');
+        } catch (e) {
+          log(`Failed to subscribe to Debug characteristic: ${e.message}`, 'error');
+        }
+
         log('Authentication handshake complete! Gate unlocked.', 'success');
         setStatus('connected');
 
@@ -973,12 +996,40 @@
       }
     }
 
+    function handleStatusNotification(event) {
+      try {
+        const value = event.target.value;
+        const text = new TextDecoder('utf-8').decode(value);
+        log(`[STATUS NOTIFY] Received: "${text}"`, 'success');
+      } catch (err) {
+        log(`Status notification error: ${err.message}`, 'error');
+      }
+    }
+
+    function handleDebugNotification(event) {
+      try {
+        const value = event.target.value;
+        const text = new TextDecoder('utf-8').decode(value);
+        log(`[DEBUG NOTIFY] Received: "${text}"`, 'info');
+      } catch (err) {
+        log(`Debug notification error: ${err.message}`, 'error');
+      }
+    }
+
     function onDisconnected() {
       log('Bluetooth connection disconnected.', 'error');
       setStatus('disconnected');
       gattServer = null;
       charAuth = null;
       charControl = null;
+      if (charStatus) {
+        charStatus.removeEventListener('characteristicvaluechanged', handleStatusNotification);
+        charStatus = null;
+      }
+      if (charDebug) {
+        charDebug.removeEventListener('characteristicvaluechanged', handleDebugNotification);
+        charDebug = null;
+      }
     }
 
     // Send control commands to gate
