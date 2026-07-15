@@ -988,9 +988,18 @@
       }
 
       const serial = serialField.value.trim() || '9999999';
-      const payload = `${command};src=P${serial}`;
+      const rawCommand = `${command};src=P${serial}\r\n`;
+      const payloadObj = {
+        VER: 1,
+        CMD: 'UART',
+        ACT: 'POST',
+        DATA: {
+          PKCMD: rawCommand
+        }
+      };
+      const payload = JSON.stringify(payloadObj);
 
-      log(`Sending command: "${payload}"`, 'info');
+      log(`Sending command: "${command}" (Payload: ${payload})`, 'info');
       try {
         const encoder = new TextEncoder();
         if (charControl.writeValueWithResponse) {
