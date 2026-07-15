@@ -681,6 +681,7 @@
 
     // GATT UUID configurations
     const UUID_SERVICE_B000 = '0000b000-0000-1000-8000-00805f9b34fb';
+    const UUID_SERVICE_B001 = '0000b001-0000-1000-8000-00805f9b34fb';
     const UUID_CHAR_B001    = '0000b001-0000-1000-8000-00805f9b34fb';
     const UUID_SERVICE_C000 = '0000c000-0000-1000-8000-00805f9b34fb';
     const UUID_CHAR_C000    = '0000c000-0000-1000-8000-00805f9b34fb';
@@ -790,7 +791,7 @@
           filters: [
             { namePrefix: 'WBT01-' }
           ],
-          optionalServices: [UUID_SERVICE_B000, UUID_SERVICE_C000]
+          optionalServices: [UUID_SERVICE_B000, UUID_SERVICE_B001, UUID_SERVICE_C000]
         });
 
         log(`Found device: ${bleDevice.name}. Connecting to GATT server...`, 'info');
@@ -799,7 +800,7 @@
         gattServer = await bleDevice.gatt.connect();
         
         log('Connected to GATT. Locating Auth Characteristic...', 'info');
-        charAuth = await getCharacteristicRobust(gattServer, UUID_SERVICE_B000, UUID_CHAR_B001);
+        charAuth = await getCharacteristicRobust(gattServer, UUID_SERVICE_B001, UUID_CHAR_B001);
         
         log('Connected! Locating Control Characteristic...', 'info');
         charControl = await getCharacteristicRobust(gattServer, UUID_SERVICE_C000, UUID_CHAR_C000);
