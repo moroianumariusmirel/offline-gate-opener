@@ -978,6 +978,15 @@
           await charAuth.writeValue(encoder.encode(responsePayload));
         }
 
+        log('Unlocking Bluetooth general control interface...', 'info');
+        try {
+          const charMode = await getCharacteristicRobust(gattServer, UUID_SERVICE_CUSTOM, '0000b205-0000-1000-8000-00805f9b34fb');
+          await charMode.writeValue(encoder.encode('M=1'));
+          log('Bluetooth general control interface unlocked (M=1 written).', 'success');
+        } catch (e) {
+          log(`Failed to write to mode characteristic: ${e.message}`, 'warning');
+        }
+
         log('Locating Status, Debug & Auth Status Characteristics...', 'info');
         try {
           charStatus = await getCharacteristicRobust(gattServer, UUID_SERVICE_CUSTOM, UUID_CHAR_C001);
