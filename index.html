@@ -1040,16 +1040,7 @@
       }
 
       const serial = serialField.value.trim() || '9999999';
-      const rawCommand = `${command};src=P${serial}\r\n`;
-      const payloadObj = {
-        VER: 1,
-        CMD: 'UART',
-        ACT: 'POST',
-        DATA: {
-          PKCMD: rawCommand
-        }
-      };
-      const payload = "C=" + JSON.stringify(payloadObj);
+      const payload = `C=${command};src=P${serial}`;
 
       log(`Sending command: "${command}" (Payload: ${payload})`, 'info');
       try {
