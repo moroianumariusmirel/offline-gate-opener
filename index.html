@@ -1049,7 +1049,7 @@
           PKCMD: rawCommand
         }
       };
-      const payload = JSON.stringify(payloadObj);
+      const payload = "C=" + JSON.stringify(payloadObj);
 
       log(`Sending command: "${command}" (Payload: ${payload})`, 'info');
       try {
