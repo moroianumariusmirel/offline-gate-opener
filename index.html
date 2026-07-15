@@ -743,11 +743,10 @@
     ];
 
     // GATT UUID configurations
-    const UUID_SERVICE_B000 = '0000b000-0000-1000-8000-00805f9b34fb';
-    const UUID_SERVICE_B001 = '0000b001-0000-1000-8000-00805f9b34fb';
-    const UUID_CHAR_B001    = '0000b001-0000-1000-8000-00805f9b34fb';
-    const UUID_SERVICE_C000 = '0000c000-0000-1000-8000-00805f9b34fb';
-    const UUID_CHAR_C000    = '0000c000-0000-1000-8000-00805f9b34fb';
+    const UUID_SERVICE_CUSTOM = '0000a001-0000-1000-8000-00805f9b34fb';
+    const UUID_SERVICE_VENDOR = 'd9403fbf-2e16-4d48-8a8a-3478b41daccc';
+    const UUID_CHAR_B001      = '0000b001-0000-1000-8000-00805f9b34fb';
+    const UUID_CHAR_C000      = '0000c000-0000-1000-8000-00805f9b34fb';
 
     let gattServer = null;
     let bleDevice = null;
@@ -883,12 +882,8 @@
             { namePrefix: 'WBT01-' }
           ],
           optionalServices: [
-            UUID_SERVICE_B000, 
-            UUID_SERVICE_B001, 
-            UUID_SERVICE_C000,
-            '0000ffe0-0000-1000-8000-00805f9b34fb', // Common serial service (HM-10)
-            '0000ffe1-0000-1000-8000-00805f9b34fb', // Common serial char
-            '6e400001-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART
+            UUID_SERVICE_CUSTOM,
+            UUID_SERVICE_VENDOR,
             '00001800-0000-1000-8000-00805f9b34fb', // Generic Access
             '00001801-0000-1000-8000-00805f9b34fb', // Generic Attribute
             '0000180a-0000-1000-8000-00805f9b34fb'  // Device Info
@@ -904,10 +899,10 @@
         await dumpGattProfile(gattServer);
         
         log('Connected to GATT. Locating Auth Characteristic...', 'info');
-        charAuth = await getCharacteristicRobust(gattServer, UUID_SERVICE_B001, UUID_CHAR_B001);
+        charAuth = await getCharacteristicRobust(gattServer, UUID_SERVICE_CUSTOM, UUID_CHAR_B001);
         
         log('Connected! Locating Control Characteristic...', 'info');
-        charControl = await getCharacteristicRobust(gattServer, UUID_SERVICE_C000, UUID_CHAR_C000);
+        charControl = await getCharacteristicRobust(gattServer, UUID_SERVICE_CUSTOM, UUID_CHAR_C000);
 
         log('Handshake: Reading challenge token from gate...', 'info');
         const challengeRaw = await charAuth.readValue();
