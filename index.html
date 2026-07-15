@@ -952,8 +952,11 @@
         // Replace Base64 URL characters
         const finalKeyEncoded = finalKey.replace(/\+/g, '%2B').replace(/\//g, '%2F');
 
+        // Smali explicitly decodes URL character entities for base64: %2B -> +, %2F -> /
+        const decodedKey = finalKeyEncoded.replace(/%2B/g, '+').replace(/%2F/g, '/');
+        
         // Write challenge response: M=[M];K=[Key]
-        const responsePayload = `M=${params.M || '0'};K=${finalKeyEncoded}`;
+        const responsePayload = `M=${params.M || '0'};K=${decodedKey}`;
         log(`Handshake: Writing verification response: "${responsePayload}"`, 'info');
         
         const encoder = new TextEncoder();
