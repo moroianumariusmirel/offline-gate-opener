@@ -1066,8 +1066,13 @@
         return;
       }
 
-      const serial = serialField.value.trim() || '9999999';
-      const payload = `C=${command};src=P${serial}`;
+      let payload;
+      if (command.trim().startsWith('{')) {
+        payload = `C=${command.trim()}`;
+      } else {
+        const serial = serialField.value.trim() || '9999999';
+        payload = `C=${command};src=P${serial}`;
+      }
 
       log(`Sending command: "${command}" (Payload: ${payload})`, 'info');
       try {
