@@ -862,9 +862,9 @@
       const pin = pinField.value.trim();
       const serial = serialField.value.trim();
 
-      if (!passcode || !pin) {
-        log('Error: Passcode and Security PIN must be filled!', 'error');
-        alert('Please fill out the Device Passcode and Security PIN fields.');
+      if (!pin) {
+        log('Error: Security PIN must be filled!', 'error');
+        alert('Please fill out the Security PIN field.');
         return;
       }
 
