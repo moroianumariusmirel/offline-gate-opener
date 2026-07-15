@@ -1069,6 +1069,8 @@
       let payload;
       if (command.trim().startsWith('{')) {
         payload = `C=${command.trim()}`;
+      } else if (command.includes(';src=')) {
+        payload = `C=${command}`;
       } else {
         const serial = serialField.value.trim() || '9999999';
         payload = `C=${command};src=P${serial}`;
