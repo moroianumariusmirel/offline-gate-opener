@@ -941,6 +941,7 @@
         }
 
         const authStringRaw = passcodePrefix + pin + params.C;
+        log(`Handshake Debug: passcode="${passcode}", resolvedPrefix="${passcodePrefix}", pin="${pin}", challenge="${params.C}", concatenated="${authStringRaw}"`, 'info');
         const base64Hash = getMd5Base64(authStringRaw);
         const finalKey = base64Hash.substring(0, 16);
 
